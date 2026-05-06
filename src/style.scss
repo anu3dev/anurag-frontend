@@ -1,0 +1,121 @@
+:root {
+  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+  line-height: 1.6;
+  color: #1f2937;
+  background: #eceae4;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(160deg, #eceae4 0%, #f7f5ef 45%, #eceae4 100%);
+}
+
+.portfolio {
+  max-width: 980px;
+  margin: 40px auto;
+  padding: 0 18px 40px;
+  display: grid;
+  gap: 18px;
+}
+
+.card {
+  background: #fffdf9;
+  border: 1px solid #d5d1c7;
+  border-radius: 10px;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(17, 24, 39, 0.06);
+
+  h2 {
+    margin: 0 0 12px;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.25rem;
+    color: #1b2430;
+    letter-spacing: 0.02em;
+  }
+
+  p {
+    margin: 0;
+    color: #2d3748;
+  }
+
+  p + p {
+    margin-top: 10px;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #2d3748;
+    display: grid;
+    gap: 6px;
+  }
+}
+
+.hero {
+  border-left: 4px solid #1f3a5f;
+
+  h1 {
+    margin: 0;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: clamp(1.8rem, 4.2vw, 2.6rem);
+    color: #111827;
+  }
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.75rem;
+  color: #4b5563;
+}
+
+.headline {
+  margin: 10px 0 8px;
+  font-size: 1.02rem;
+  color: #243244;
+}
+
+.meta {
+  margin: 0;
+  color: #5b6470;
+  font-size: 0.95rem;
+}
+
+.skills-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.role + .role {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px dashed #d6d3ca;
+}
+
+.role h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #111827;
+}
+
+.duration {
+  margin: 4px 0 10px !important;
+  font-size: 0.92rem;
+  color: #6b7280;
+}
+
+@media (max-width: 680px) {
+  .portfolio {
+    margin: 24px auto;
+    padding-inline: 12px;
+  }
+
+  .card {
+    padding: 18px;
+  }
+}
