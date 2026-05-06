@@ -29,7 +29,7 @@ function renderPage(page: ReturnType<typeof getPage>) {
   bindHeader()
   if (page === 'contact') bindContact()
 
-  // bind data-nav links to SPA router
+  // bind data-nav links to router
   document.querySelectorAll<HTMLAnchorElement>('[data-nav]').forEach(link => {
     link.addEventListener('click', e => {
       e.preventDefault()
