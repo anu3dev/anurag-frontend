@@ -1,34 +1,49 @@
 export const meta = {
   name: 'Anurag Kumar',
-  title: 'Senior Software Engineer | Front-End Architect | AI & LLM Integration',
+  title: 'Senior Software Engineer | Front-End & Full-Stack Architect | AI & LLM Integration',
   email: 'anu3dev@gmail.com',
   location: 'Minneapolis, MN',
-  availability: 'Open to Remote or Hybrid opportunities',
+  availability: 'Open to AI, Full-Stack, and Frontend Architecture roles — Remote or Hybrid',
   visa: 'H1B Visa (Valid)',
+  linkedin: 'https://www.linkedin.com/in/anu3dev/',
 }
 
-export const summary = `Senior Software Engineer with 9+ years of experience developing and optimizing large-scale, 
-enterprise-grade web applications across banking, financial, and automotive domains. Proficient in JavaScript, 
-TypeScript, React, Angular, HTML5, CSS3, and SCSS, with a strong focus on performance, scalability, 
+export const summary = `Senior Software Engineer with 10+ years of experience developing and optimizing large-scale, 
+enterprise-grade web applications across healthcare, banking, financial, and automotive domains. Proficient in JavaScript, 
+TypeScript, React, Angular, HTML5, CSS3, SCSS, Storybook, and Zustand, with a strong focus on performance, scalability, 
 accessibility (a11y), and component reusability. Currently expanding full-stack expertise with Java, Spring Boot, 
-RESTful APIs, GraphQL, Docker, and CI/CD pipelines — exploring AI-powered development workflows, LLM-based 
-assistants, and ML-driven automation.`
+RESTful APIs, GraphQL, Docker, AWS, and CI/CD pipelines — exploring AI-powered development workflows with RAG, Claude, 
+Gemini, LLM-based assistants, and ML-driven automation.`
 
 export const skills = [
-  { category: 'Frontend', items: ['React', 'Angular', 'JavaScript', 'TypeScript', 'HTML5', 'CSS3', 'SCSS', 'Redux', 'WCAG/a11y', 'Micro-Frontend', 'Responsive Design'] },
+  { category: 'Frontend', items: ['React', 'Angular', 'JavaScript', 'TypeScript', 'HTML5', 'CSS3', 'SCSS', 'Redux', 'Zustand', 'Storybook', 'WCAG/a11y', 'Micro-Frontend', 'Responsive Design'] },
   { category: 'Backend', items: ['Java', 'Spring Boot', 'Node.js', 'RESTful APIs', 'GraphQL'] },
   { category: 'Build & Tooling', items: ['Vite', 'Webpack', 'Babel', 'ESLint', 'Prettier', 'NPM', 'PNPM', 'Yarn', 'Maven', 'Gradle'] },
   { category: 'DevOps & CI/CD', items: ['Jenkins', 'GitLab CI/CD', 'SonarQube', 'Fortify', 'Black Duck', 'AEGIS'] },
   { category: 'Monitoring', items: ['Splunk', 'Kibana', 'Quantum Metric', 'Adobe Analytics', 'JIRA', 'Confluence', 'Postman'] },
-  { category: 'Cloud & Containers', items: ['Docker', 'Azure', 'Netlify', 'Render', 'Neon'] },
-  { category: 'AI & ML', items: ['OpenAI GPT APIs', 'Prompt Engineering', 'LLM Integration', 'ML Pipelines'] },
+  { category: 'Cloud & Containers', items: ['AWS', 'Docker', 'Azure', 'Netlify', 'Render', 'Neon'] },
+  { category: 'AI & ML', items: ['OpenAI GPT APIs', 'Claude', 'Gemini', 'RAG', 'Prompt Engineering', 'LLM Integration', 'ML Pipelines'] },
 ]
 
 export const experience = [
   {
+    role: 'Senior UI Engineer',
+    company: 'Leading US-Based Health Insurance Provider',
+    duration: 'Jan 2026 – Present',
+    location: 'Minneapolis, MN',
+    highlights: [
+      'Building a design-system-driven component library with Storybook for cross-team UI consistency.',
+      'Migrated complex state management from Redux to Zustand — reduced boilerplate by 40% and improved developer experience.',
+      'Implementing micro-frontend architecture for member-facing health portal serving 5M+ users.',
+      'Standardizing CI/CD quality gates with SonarQube, Fortify, and Black Duck scans across all frontend repos.',
+      'Driving accessibility-first development practices, achieving WCAG 2.1 AA compliance across member flows.',
+    ],
+    stack: ['React', 'TypeScript', 'Storybook', 'Zustand', 'Vite', 'SCSS', 'Jenkins', 'SonarQube', 'AWS', 'Micro-Frontend'],
+  },
+  {
     role: 'Tech Lead',
-    company: 'Leading Global IT Services Firm',
-    duration: 'Mar 2023 – Present',
+    company: 'Leading US-Based Bank',
+    duration: 'Mar 2023 – Dec 2025',
     location: 'Minneapolis, MN',
     highlights: [
       'Led Onboarding V2 migration to Vite-based mono-repo — modular architecture serving 13,000+ partner implementations.',
@@ -126,3 +141,7 @@ export const education = {
   school: 'Rashtrasant Tukadoji Maharaj (RTM) Nagpur University, India',
   year: '2011 – 2015',
 }
+
+export const certifications = [
+  { name: 'AWS Certified Cloud Practitioner', issuer: 'Amazon Web Services', year: '2024' },
+]

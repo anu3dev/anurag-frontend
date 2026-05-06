@@ -11,10 +11,10 @@ export function renderHome(): string {
           <h1 class="hero-name">${meta.name}</h1>
           <h2 class="hero-title">
             Senior Software Engineer<br/>
-            <span class="accent">Front-End Architect</span> &amp; AI Enthusiast
+            <span class="accent">Front-End & Full-Stack Architect</span> · AI Enthusiast
           </h2>
           <p class="hero-desc">
-            9+ years building enterprise-grade web products across banking, finance,
+            10+ years building enterprise-grade web products across healthcare, banking, finance,
             and automotive. I architect scalable systems, lead teams, and integrate AI
             into real engineering workflows.
           </p>
@@ -23,8 +23,8 @@ export function renderHome(): string {
             <a href="#contact" class="btn btn-outline" data-nav="contact">Let's Talk</a>
           </div>
           <div class="hero-tags">
-            <span>React</span><span>TypeScript</span><span>Micro-Frontend</span>
-            <span>AI / LLM</span><span>Spring Boot</span>
+            <span>React</span><span>TypeScript</span><span>Storybook</span><span>Zustand</span>
+            <span>Micro-Frontend</span><span>AI / LLM</span><span>AWS</span><span>Spring Boot</span>
           </div>
         </div>
         <div class="hero-art">
@@ -32,8 +32,13 @@ export function renderHome(): string {
             <div class="art-line"></div>
             <div class="art-code">
               <p><span class="kw">const</span> <span class="fn">engineer</span> = {</p>
-              <p>&nbsp;&nbsp;<span class="key">experience</span>: <span class="str">"9+ years"</span>,</p>
-              <p>&nbsp;&nbsp;<span class="key">focus</span>: <span class="str">"Frontend + AI"</span>,</p>
+              <p>&nbsp;&nbsp;<span class="key">experience</span>: <span class="str">"10+ years"</span>,</p>
+              <p>&nbsp;&nbsp;<span class="key">focus</span>: <span class="str">"Full-Stack + AI"</span>,</p>
+              <p>&nbsp;&nbsp;<span class="key">stack</span>: <span class="str">"React · JavaScript · Java · Spring Boot"</span>,</p>
+              <p>&nbsp;&nbsp;<span class="key">design</span>: <span class="str">"Storybook · Zustand · SCSS"</span>,</p>
+              <p>&nbsp;&nbsp;<span class="key">cloud</span>: <span class="str">"AWS · Docker · Jenkins"</span>,</p>
+              <p>&nbsp;&nbsp;<span class="key">ai</span>: <span class="str">"RAG · Claude · GPT APIs"</span>,</p>
+              <p>&nbsp;&nbsp;<span class="key">domains</span>: <span class="str">"Healthcare · Banking"</span>,</p>
               <p>&nbsp;&nbsp;<span class="key">status</span>: <span class="str">"Open to work"</span>,</p>
               <p>}</p>
             </div>
@@ -44,26 +49,36 @@ export function renderHome(): string {
       <!-- WHAT I DO -->
       <section class="section what-i-do">
         <h2 class="section-title">What I Do</h2>
-        <div class="cards-grid">
+        <div class="cards-grid three-col">
           <article class="card">
             <div class="card-icon">⚡</div>
             <h3>Frontend Architecture</h3>
-            <p>Micro-frontend systems, component libraries, and performance-first UI engineering at enterprise scale.</p>
+            <p>Micro-frontend systems, Storybook-driven component libraries, Vite builds, and performance-first UI engineering at enterprise scale.</p>
           </article>
           <article class="card">
             <div class="card-icon">🤖</div>
             <h3>AI Integration</h3>
-            <p>Embedding LLMs and GPT-powered tools into real CI/CD and product workflows.</p>
+            <p>Building with RAG pipelines, Claude, Gemini, and GPT APIs. AWS Certified Cloud Practitioner enabling cloud-native AI workflows.</p>
           </article>
           <article class="card">
             <div class="card-icon">☕</div>
-            <h3>Full-Stack Expansion</h3>
-            <p>Growing hands-on expertise in Java, Spring Boot, REST APIs, Docker, and cloud deployments.</p>
+            <h3>Full-Stack Development</h3>
+            <p>Growing hands-on expertise in Java, Spring Boot, REST APIs, GraphQL, Docker, and cloud deployments with AWS.</p>
           </article>
           <article class="card">
             <div class="card-icon">♿</div>
             <h3>Accessibility & Quality</h3>
-            <p>WCAG 2.1 compliant UI with deep CI/CD quality gates — SonarQube, Fortify, and regression-safe testing.</p>
+            <p>WCAG 2.1 compliant UI with deep quality gates — SonarQube, Fortify, Black Duck, and regression-safe testing strategies.</p>
+          </article>
+          <article class="card">
+            <div class="card-icon">🔄</div>
+            <h3>CI/CD & Production</h3>
+            <p>Jenkins pipelines, multi-environment deployments, real-time monitoring with Splunk & Kibana, and production incident triage.</p>
+          </article>
+          <article class="card">
+            <div class="card-icon">☁️</div>
+            <h3>Cloud & DevOps</h3>
+            <p>AWS cloud infrastructure, Docker containerization, Azure deployments, and infrastructure-as-code practices.</p>
           </article>
         </div>
       </section>

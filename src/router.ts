@@ -1,4 +1,4 @@
-type Page = 'home' | 'about' | 'contact' | 'coming-soon'
+type Page = 'home' | 'about' | 'blog' | 'contact' | 'coming-soon'
 
 type RouteHandler = (page: Page) => void
 
@@ -6,7 +6,7 @@ let currentHandler: RouteHandler | null = null
 
 export function getPage(): Page {
   const hash = location.hash.replace('#', '') as Page
-  return ['home', 'about', 'contact', 'coming-soon'].includes(hash) ? hash : 'home'
+  return ['home', 'about', 'blog', 'contact', 'coming-soon'].includes(hash) ? hash : 'home'
 }
 
 export function navigate(page: Page) {

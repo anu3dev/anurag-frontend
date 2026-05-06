@@ -1,4 +1,4 @@
-import { meta, summary, skills, experience, education, aiProjects } from '../data/resume'
+import { meta, summary, skills, experience, education, aiProjects, certifications } from '../data/resume'
 
 export function renderAbout(): string {
   return `
@@ -9,12 +9,13 @@ export function renderAbout(): string {
           <div>
             <p class="hero-eyebrow">About Me</p>
             <h1 class="page-title">${meta.name}</h1>
-            <p class="page-subtitle">Senior Software Engineer | Front-End Architect | AI & LLM Integration</p>
+            <p class="page-subtitle">Senior Software Engineer | Front-End & Full-Stack Architect | AI & LLM Integration</p>
           </div>
           <div class="about-meta">
             <div class="meta-item"><span class="meta-label">Location</span><span>${meta.location}</span></div>
             <div class="meta-item"><span class="meta-label">Availability</span><span>${meta.availability}</span></div>
             <div class="meta-item"><span class="meta-label">Auth</span><span>${meta.visa}</span></div>
+            <div class="meta-item"><span class="meta-label">LinkedIn</span><a href="${meta.linkedin}" target="_blank" rel="noopener" style="color:var(--accent)">anu3dev</a></div>
           </div>
         </div>
         <div class="about-summary">
@@ -92,6 +93,23 @@ export function renderAbout(): string {
             <p>${education.school}</p>
             <p class="t-duration">${education.year}</p>
           </div>
+        </div>
+      </section>
+
+      <!-- CERTIFICATIONS -->
+      <section class="section">
+        <h2 class="section-title">Certifications</h2>
+        <div class="cards-grid">
+          ${certifications.map(c => `
+            <div class="card education-card">
+              <div class="card-icon">🏅</div>
+              <div>
+                <h3>${c.name}</h3>
+                <p>${c.issuer}</p>
+                <p class="t-duration">${c.year}</p>
+              </div>
+            </div>
+          `).join('')}
         </div>
       </section>
 

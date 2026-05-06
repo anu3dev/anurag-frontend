@@ -5,6 +5,7 @@ import { renderHome } from './pages/Home'
 import { renderAbout } from './pages/AboutMe'
 import { renderContact, bindContact } from './pages/Contact'
 import { renderComingSoon } from './pages/ComingSoon'
+import { renderBlog } from './pages/Blog'
 import { getPage, onRouteChange, navigate } from './router'
 
 const app = document.querySelector<HTMLDivElement>('#app')!
@@ -13,6 +14,7 @@ function renderPage(page: ReturnType<typeof getPage>) {
   const pageMap: Record<string, () => string> = {
     home: renderHome,
     about: renderAbout,
+    blog: renderBlog,
     contact: renderContact,
     'coming-soon': renderComingSoon,
   }

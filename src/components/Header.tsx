@@ -4,6 +4,7 @@ export function renderHeader(activePage: string): string {
   const navLinks = [
     { id: 'home', label: 'Home' },
     { id: 'about', label: 'About Me' },
+    { id: 'blog', label: 'Blog' },
     { id: 'contact', label: 'Contact' },
   ]
 
@@ -39,6 +40,7 @@ export function renderHeader(activePage: string): string {
         </div>
       </div>
     </header>
+    <div class="nav-overlay" id="nav-overlay"></div>
   `
 }
 
@@ -46,17 +48,30 @@ export function bindHeader() {
   // hamburger toggle
   const hamburger = document.getElementById('hamburger')!
   const nav = document.getElementById('main-nav')!
+  const overlay = document.getElementById('nav-overlay')!
+
+  function closeNav() {
+    hamburger.classList.remove('open')
+    nav.classList.remove('open')
+    overlay.classList.remove('open')
+  }
+
   hamburger.addEventListener('click', () => {
-    hamburger.classList.toggle('open')
-    nav.classList.toggle('open')
+    const isOpen = nav.classList.contains('open')
+    if (isOpen) {
+      closeNav()
+    } else {
+      hamburger.classList.add('open')
+      nav.classList.add('open')
+      overlay.classList.add('open')
+    }
   })
+
+  overlay.addEventListener('click', closeNav)
 
   // close on nav link click
   nav.querySelectorAll('a[data-nav]').forEach(link => {
-    link.addEventListener('click', () => {
-      hamburger.classList.remove('open')
-      nav.classList.remove('open')
-    })
+    link.addEventListener('click', closeNav)
   })
 
   // theme toggle
