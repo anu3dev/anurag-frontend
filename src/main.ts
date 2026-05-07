@@ -6,6 +6,7 @@ import { renderAbout } from './pages/AboutMe'
 import { renderContact, bindContact } from './pages/Contact'
 import { renderComingSoon } from './pages/ComingSoon'
 import { renderBlog } from './pages/Blog'
+import { renderAIChatbot, bindAIChatbot } from './pages/AIChatbot'
 import { getPage, onRouteChange, navigate } from './router'
 
 const app = document.querySelector<HTMLDivElement>('#app')!
@@ -17,6 +18,7 @@ function renderPage(page: ReturnType<typeof getPage>) {
     blog: renderBlog,
     contact: renderContact,
     'coming-soon': renderComingSoon,
+    'ai-chatbot': renderAIChatbot,
   }
   const pageRenderer = pageMap[page] ?? renderHome
 
@@ -28,6 +30,7 @@ function renderPage(page: ReturnType<typeof getPage>) {
 
   bindHeader()
   if (page === 'contact') bindContact()
+  if (page === 'ai-chatbot') bindAIChatbot()
 
   // bind data-nav links to router
   document.querySelectorAll<HTMLAnchorElement>('[data-nav]').forEach(link => {

@@ -119,14 +119,19 @@ export function renderHome(): string {
         <h2 class="section-title">My Workspace</h2>
         <p class="section-sub">Upcoming tools, labs, and utilities to showcase engineering craftsmanship.</p>
         <div class="upcoming-grid">
-          ${upcomingProjects.map(p => `
-            <a href="#coming-soon" class="upcoming-card" data-nav="coming-soon">
-              <div class="upcoming-badge">Coming Soon</div>
+          ${upcomingProjects.map(p => {
+            const isLive = (p as any).live
+            const href = isLive ? '#ai-chatbot' : '#coming-soon'
+            const nav = isLive ? 'ai-chatbot' : 'coming-soon'
+            const badge = isLive ? 'Live' : 'Coming Soon'
+            return `
+            <a href="${href}" class="upcoming-card ${isLive ? 'upcoming-live' : ''}" data-nav="${nav}">
+              <div class="upcoming-badge ${isLive ? 'badge-live' : ''}">${badge}</div>
               <h3>${p.name}</h3>
               <p>${p.desc}</p>
-              <span class="card-link">Explore →</span>
-            </a>
-          `).join('')}
+              <span class="card-link">${isLive ? 'Try It →' : 'Explore →'}</span>
+            </a>`
+          }).join('')}
         </div>
       </section>
 

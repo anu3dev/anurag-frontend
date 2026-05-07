@@ -1,4 +1,5 @@
 import { meta } from '../data/resume'
+import { API_BASE_URL } from '../constants'
 
 export function renderContact(): string {
   return `
@@ -127,7 +128,7 @@ export function bindContact() {
     note.textContent = ''
 
     try {
-      const res = await fetch('https://nodeapi.anuragkr.in/contact-through-website', {
+      const res = await fetch(`${API_BASE_URL}/contact-through-website`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

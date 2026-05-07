@@ -128,7 +128,7 @@ export const aiProjects = [
 ]
 
 export const upcomingProjects = [
-  { name: 'AI Chat Suite', desc: 'Domain-aware portfolio assistant with contextual embeddings and resume-aware Q&A.' },
+  { name: 'Prompt-Based AI Chatbot', desc: 'AI-powered personal assistant with customizable system prompts, adjustable LLM parameters, and resume-aware conversational Q&A.', live: true },
   { name: 'Frontend Perf Bench', desc: 'Bundle diagnostics, rendering profiler, and a11y audit utility toolkit.' },
   { name: 'Java + React Lab', desc: 'Full-stack starter demos with Spring Boot APIs and modern React frontends.' },
   { name: 'Prompt Engineering Kit', desc: 'A reusable prompt template library for LLM integration workflows.' },
