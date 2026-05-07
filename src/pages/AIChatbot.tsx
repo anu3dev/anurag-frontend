@@ -129,6 +129,7 @@ export function renderAIChatbot(): string {
                 <label for="ai-model">Model</label>
                 <select id="ai-model">
                   <option value="gpt-4o-mini" selected>GPT-4o Mini</option>
+                  <option value="gpt-4.1-nano">GPT-4.1 Nano</option>
                 </select>
               </div>
               <div class="control-group">
