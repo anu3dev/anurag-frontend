@@ -139,8 +139,8 @@ export function renderAIChatbot(): string {
               <div class="control-group">
                 <label for="ai-max-tokens">Tokens</label>
                 <select id="ai-max-tokens">
-                  <option value="50">50</option>
-                  <option value="200" selected>200</option>
+                  <option value="50" selected>50</option>
+                  <option value="200">200</option>
                   <option value="500">500</option>
                 </select>
               </div>
