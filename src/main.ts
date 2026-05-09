@@ -6,25 +6,28 @@ import { renderAbout } from './pages/AboutMe'
 import { renderContact, bindContact } from './pages/Contact'
 import { renderComingSoon } from './pages/ComingSoon'
 import { renderBlog } from './pages/Blog'
+import { renderBlogPost } from './pages/BlogPost'
 import { renderAIChatbot, bindAIChatbot } from './pages/AIChatbot'
 import { getPage, onRouteChange, navigate } from './router'
 
 const app = document.querySelector<HTMLDivElement>('#app')!
 
-function renderPage(page: ReturnType<typeof getPage>) {
-  const pageMap: Record<string, () => string> = {
-    home: renderHome,
-    about: renderAbout,
-    blog: renderBlog,
-    contact: renderContact,
-    'coming-soon': renderComingSoon,
-    'ai-chatbot': renderAIChatbot,
+function renderPage(page: ReturnType<typeof getPage>['page'], param?: string) {
+  const pageMap: Record<string, (p?: string) => string> = {
+    home: () => renderHome(),
+    about: () => renderAbout(),
+    blog: () => renderBlog(),
+    'blog-post': (slug?: string) => renderBlogPost(slug || ''),
+    contact: () => renderContact(),
+    'coming-soon': () => renderComingSoon(),
+    'ai-chatbot': () => renderAIChatbot(),
   }
-  const pageRenderer = pageMap[page] ?? renderHome
+  const pageRenderer = pageMap[page] ?? pageMap['home']
+  const activePage = page === 'blog-post' ? 'blog' : page
 
   app.innerHTML = `
-    ${renderHeader(page)}
-    ${pageRenderer()}
+    ${renderHeader(activePage)}
+    ${pageRenderer(param)}
     ${renderFooter()}
   `
 
@@ -40,11 +43,20 @@ function renderPage(page: ReturnType<typeof getPage>) {
     })
   })
 
+  // bind blog card links
+  document.querySelectorAll<HTMLAnchorElement>('[data-blog]').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault()
+      navigate(`blog/${link.dataset.blog}`)
+    })
+  })
+
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 // initial render
 const saved = localStorage.getItem('theme') || 'dark'
 document.documentElement.setAttribute('data-theme', saved)
-renderPage(getPage())
+const initial = getPage()
+renderPage(initial.page, initial.param)
 onRouteChange(renderPage)
