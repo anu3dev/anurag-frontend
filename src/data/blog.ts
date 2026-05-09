@@ -536,15 +536,205 @@ CONTEXT DATA:
 `,
   },
   {
-    slug: 'micro-frontends-at-scale',
-    title: 'Micro-Frontends at Scale',
-    subtitle: 'Lessons from Enterprise Mono-Repos',
-    date: '',
-    readTime: '~12 min read',
-    tags: ['Micro-Frontend', 'React', 'Vite', 'Architecture'],
-    status: 'draft',
-    excerpt: 'Lessons from architecting modular mono-repos serving thousands of partner implementations.',
-    content: '',
+    slug: 'react-vs-angular-vs-nextjs-and-micro-frontends',
+    title: 'React vs Angular vs Next.js — And When You Actually Need Micro-Frontends',
+    subtitle: 'A Practical Decision Guide with Real-World Examples',
+    date: 'May 8, 2026',
+    readTime: '20 min read',
+    tags: ['React', 'Angular', 'Next.js', 'Micro-Frontend', 'Architecture'],
+    status: 'live',
+    excerpt: 'A no-nonsense comparison of React, Angular, and Next.js — when to use each, real-world examples, and when your architecture actually needs micro-frontends.',
+    content: `
+<p>One of the most common questions in frontend engineering: <em>"Should I use React, Angular, or Next.js?"</em> — followed closely by <em>"Do I need micro-frontends?"</em> The answer, as always, is <strong>it depends</strong>. But this guide will give you a clear framework for deciding.</p>
+
+<h2>1. React — The Flexible Library</h2>
+<p><strong>React</strong> is a UI library, not a framework. It gives you component rendering and state management — everything else (routing, data fetching, forms) is your choice.</p>
+
+<h3>When to Use React</h3>
+<ul>
+<li>You want <strong>freedom to pick your own tools</strong> (Vite, Webpack, Redux, Zustand, React Router, etc.)</li>
+<li>Building a <strong>single-page application (SPA)</strong> where SEO doesn't matter much</li>
+<li>Your team is comfortable assembling an ecosystem from packages</li>
+<li>You want the <strong>largest community</strong> and npm ecosystem</li>
+</ul>
+
+<h3>Real-World Examples</h3>
+<ul>
+<li><strong>Facebook / Instagram</strong> — React was built for this. Highly interactive, SPA-style feeds.</li>
+<li><strong>Airbnb</strong> — Dynamic search, filtering, and booking flows.</li>
+<li><strong>This portfolio site</strong> — A Vite + React SPA with hash routing, theme toggling, and an AI chatbot playground. No SSR needed because it's a personal portfolio, not a content site that needs search engine indexing. <a href="https://anuragkr.in" target="_blank" rel="noopener noreferrer">See it live →</a></li>
+<li><strong>Internal dashboards</strong> — Admin panels, analytics tools, and CRMs where the app lives behind a login.</li>
+</ul>
+
+<h3>When NOT to Use React (alone)</h3>
+<ul>
+<li>You need <strong>per-page SEO / social sharing previews</strong> (use Next.js instead)</li>
+<li>You need a <strong>content-heavy blog or marketing site</strong> (SSG/SSR needed)</li>
+<li>Your team needs strict conventions and guardrails (Angular might fit better)</li>
+</ul>
+
+<h2>2. Angular — The Enterprise Framework</h2>
+<p><strong>Angular</strong> is a full opinionated framework built by Google. It ships with routing, forms, HTTP client, dependency injection, testing, and a powerful CLI — all in one box.</p>
+
+<h3>When to Use Angular</h3>
+<ul>
+<li>Building <strong>large enterprise applications</strong> with 50+ developers</li>
+<li>Your team has <strong>Java / C# / Spring Boot backgrounds</strong> (Angular's DI pattern feels familiar)</li>
+<li>You need <strong>strict conventions</strong> so every project looks the same across teams</li>
+<li>Building <strong>complex form-heavy apps</strong> (banking portals, insurance claims, CRMs)</li>
+<li>You want <strong>everything built-in</strong> without choosing 15 different npm packages</li>
+</ul>
+
+<h3>Real-World Examples</h3>
+<ul>
+<li><strong>Google Cloud Console</strong> — Complex admin UI with hundreds of views, forms, and data tables.</li>
+<li><strong>Deutsche Bank, UBS, HSBC</strong> — Banking portals where compliance, structure, and long-term stability matter more than developer freedom.</li>
+<li><strong>SAP, Siemens, BMW</strong> — Enterprise dashboards managing millions of data points.</li>
+<li><strong>Government portals</strong> — Tax filing systems, healthcare enrollment — form-heavy, regulation-heavy, needs strict architecture.</li>
+</ul>
+
+<h3>When NOT to Use Angular</h3>
+<ul>
+<li>Small to mid-size projects — Angular's boilerplate overhead isn't worth it</li>
+<li>Content sites, blogs, marketing pages — Angular Universal (SSR) works but is clunky</li>
+<li>Rapid prototyping — React or Next.js is much faster to spin up</li>
+<li>You want a lightweight bundle — Angular ships heavier than React</li>
+</ul>
+
+<h2>3. Next.js — The React Meta-Framework</h2>
+<p><strong>Next.js</strong> is built <em>on top</em> of React. It adds server-side rendering (SSR), static site generation (SSG), API routes, file-based routing, and image optimization — things React doesn't provide on its own.</p>
+
+<h3>When to Use Next.js</h3>
+<ul>
+<li>You need <strong>SEO-friendly pages</strong> with unique meta tags per route</li>
+<li>Building a <strong>blog, docs site, or marketing site</strong> where Google indexing matters</li>
+<li>You want <strong>social sharing previews</strong> (LinkedIn, Twitter cards) with per-page content</li>
+<li>You need <strong>API routes</strong> — lightweight backend endpoints without a separate server</li>
+<li>You want <strong>static generation at build time</strong> (SSG) for blazing-fast page loads</li>
+</ul>
+
+<h3>Real-World Examples</h3>
+<ul>
+<li><strong>Vercel's own site</strong> — Marketing + docs, SSG with dynamic OG images.</li>
+<li><strong>Hulu, TikTok (web), Nike</strong> — Content-heavy sites needing fast first loads and SEO.</li>
+<li><strong>A blog with LinkedIn sharing</strong> — Each blog post gets its own <code>&lt;meta og:title&gt;</code> and <code>&lt;meta og:description&gt;</code> at build time. When shared on LinkedIn, the preview shows the post title and excerpt — not a generic site name. This is the exact problem you can't solve with a client-side SPA.</li>
+<li><strong>E-commerce product pages</strong> — Each product needs unique SEO meta tags and fast server-rendered HTML.</li>
+</ul>
+
+<h3>When NOT to Use Next.js</h3>
+<ul>
+<li>Pure SPA dashboards behind authentication — you don't need SSR for internal tools</li>
+<li>You want full control over your build tooling (Next.js is opinionated about its build pipeline)</li>
+<li>Your backend is already a separate Spring Boot / Express app — Next.js API routes would be redundant</li>
+</ul>
+
+<h2>4. Side-by-Side Comparison</h2>
+<table class="blog-table">
+<thead><tr><th>Aspect</th><th>React</th><th>Angular</th><th>Next.js</th></tr></thead>
+<tbody>
+<tr><td><strong>Type</strong></td><td>UI Library</td><td>Full Framework</td><td>React Meta-Framework</td></tr>
+<tr><td><strong>Created by</strong></td><td>Meta</td><td>Google</td><td>Vercel</td></tr>
+<tr><td><strong>Language</strong></td><td>JS (TS optional)</td><td>TypeScript (required)</td><td>JS (TS optional)</td></tr>
+<tr><td><strong>Rendering</strong></td><td>Client-side (CSR)</td><td>Client-side (CSR)</td><td>SSR + SSG + CSR</td></tr>
+<tr><td><strong>Routing</strong></td><td>react-router (external)</td><td>Built-in</td><td>File-based (built-in)</td></tr>
+<tr><td><strong>SEO</strong></td><td>Poor (without SSR)</td><td>Poor (without Universal)</td><td>Excellent</td></tr>
+<tr><td><strong>Learning Curve</strong></td><td>Low</td><td>High</td><td>Medium</td></tr>
+<tr><td><strong>Bundle Size</strong></td><td>Small</td><td>Large</td><td>Medium</td></tr>
+<tr><td><strong>Best For</strong></td><td>SPAs, dashboards</td><td>Enterprise apps</td><td>Content sites, blogs, SEO</td></tr>
+</tbody>
+</table>
+
+<h2>5. What Are Micro-Frontends?</h2>
+<p>Micro-frontends apply the <strong>microservices pattern to the frontend</strong>. Instead of one monolithic frontend app, you split it into multiple independently built, deployed, and maintained mini-apps — each owned by a different team.</p>
+<p>Think of it like this:</p>
+<div class="blog-architecture">
+<div class="arch-col">
+<h4>Monolithic Frontend</h4>
+<p>One repo → One build → One deployment → All teams work in the same codebase</p>
+</div>
+<div class="arch-col">
+<h4>Micro-Frontend</h4>
+<p>Multiple repos → Independent builds → Independent deployments → Teams own their slice</p>
+</div>
+</div>
+
+<h2>6. When You Actually Need Micro-Frontends</h2>
+<p>Micro-frontends add complexity. You should only reach for them when the organizational pain is real:</p>
+
+<h3>Use Micro-Frontends When</h3>
+<ul>
+<li><strong>Multiple teams (5+) work on the same product</strong> — and stepping on each other's code during merges</li>
+<li><strong>Independent deployment is critical</strong> — Team A's feature shouldn't wait for Team B's QA</li>
+<li><strong>Different tech stacks need to coexist</strong> — e.g., a legacy Angular app + a new React module</li>
+<li><strong>The app is massive</strong> — hundreds of routes, millions of users, 30+ developers</li>
+<li><strong>Teams are distributed</strong> — onsite + offshore teams need clear ownership boundaries</li>
+</ul>
+
+<h3>Real-World Micro-Frontend Examples</h3>
+<ul>
+<li><strong>IKEA</strong> — Product pages, cart, checkout, and account are separate micro-apps owned by different teams.</li>
+<li><strong>Spotify</strong> — Each section (player, playlist, search, browse) is a separate micro-app.</li>
+<li><strong>Large banking portals</strong> — Onboarding, account management, loan applications, and card services are independent modules. Teams deploy independently without blocking each other. I've architected this exact pattern — a Vite-based mono-repo serving 13,000+ partner implementations with independent module deployment.</li>
+<li><strong>Enterprise health insurance portals</strong> — Member portal, provider search, claims, and benefits — each a separate micro-frontend serving 5M+ users.</li>
+</ul>
+
+<h3>Do NOT Use Micro-Frontends When</h3>
+<ul>
+<li><strong>You have a small team (1–5 developers)</strong> — the overhead will slow you down</li>
+<li><strong>It's a simple app</strong> — a portfolio, blog, or landing page doesn't need this</li>
+<li><strong>You don't have CI/CD maturity</strong> — micro-frontends need solid pipelines per module</li>
+<li><strong>Shared state is heavy</strong> — if every module needs access to the same global state, you'll fight the architecture</li>
+</ul>
+
+<h2>7. Micro-Frontend Implementation Approaches</h2>
+<table class="blog-table">
+<thead><tr><th>Approach</th><th>How It Works</th><th>Best For</th></tr></thead>
+<tbody>
+<tr><td><strong>Module Federation</strong></td><td>Webpack/Vite shares modules at runtime between apps</td><td>React-to-React micro-apps</td></tr>
+<tr><td><strong>Single-SPA</strong></td><td>Framework-agnostic orchestrator that mounts/unmounts micro-apps</td><td>Mix of React + Angular + Vue</td></tr>
+<tr><td><strong>iframes</strong></td><td>Each micro-app runs in an isolated iframe</td><td>Maximum isolation (legacy systems)</td></tr>
+<tr><td><strong>Route-based splitting</strong></td><td>Reverse proxy routes to different deployed apps</td><td>Simplest — no framework needed</td></tr>
+<tr><td><strong>Mono-repo + lazy loading</strong></td><td>One repo, but modules load independently via code splitting</td><td>Moderate scale with shared tooling</td></tr>
+</tbody>
+</table>
+<p>The <strong>route-based approach</strong> (using Nginx or Netlify rewrites) is the simplest and most common starting point. You can always evolve to Module Federation later if needed.</p>
+
+<h2>8. The Decision Framework</h2>
+<p>Here's a practical flowchart for choosing your stack:</p>
+<div class="blog-callout">
+<strong>Is SEO / social sharing important?</strong><br/>
+→ Yes → <strong>Next.js</strong><br/>
+→ No → Continue ↓<br/><br/>
+<strong>Is the team large (10+ devs) with strict conventions needed?</strong><br/>
+→ Yes → <strong>Angular</strong><br/>
+→ No → Continue ↓<br/><br/>
+<strong>Is it an SPA / dashboard / internal tool?</strong><br/>
+→ Yes → <strong>React</strong> (with Vite)<br/><br/>
+<strong>Do multiple teams (5+) need independent deployments?</strong><br/>
+→ Yes → Add <strong>micro-frontend architecture</strong> on top of your framework choice<br/>
+→ No → Keep it as a <strong>monolithic SPA with good code splitting</strong>
+</div>
+
+<h2>9. A Practical Example: This Portfolio</h2>
+<p>This very portfolio uses a <strong>hybrid approach</strong>:</p>
+<ul>
+<li><strong>Main site</strong> — React + Vite SPA (no SSR needed — it's a personal portfolio)</li>
+<li><strong>AI Chatbot</strong> — Built as a page within the SPA, calls a Node.js backend proxy on AWS EC2. <a href="https://anuragkr.in/#ai-chatbot" target="_blank" rel="noopener noreferrer">Try it live →</a></li>
+<li><strong>Blog</strong> — Currently embedded in the SPA. For per-post LinkedIn previews, the plan is to split it into a <strong>separate Next.js app</strong> deployed on Netlify, with route-based proxying (<code>/blog/*</code> → Next.js app). No micro-frontend framework needed — just a Netlify rewrite rule.</li>
+</ul>
+<p>This is the pragmatic approach: <strong>start simple, split when there's a real reason to</strong>.</p>
+
+<h2>What You've Learned</h2>
+<ul class="blog-checklist">
+<li>React is a library — maximum flexibility, best for SPAs and dashboards</li>
+<li>Angular is a framework — maximum structure, best for large enterprise apps</li>
+<li>Next.js is a meta-framework — best when SEO, SSR, or social previews matter</li>
+<li>Micro-frontends solve organizational problems, not technical ones</li>
+<li>Start with a monolith and split only when team scale demands it</li>
+<li>Route-based splitting (reverse proxy) is the simplest micro-frontend pattern</li>
+<li>The right choice depends on team size, SEO needs, and deployment requirements</li>
+</ul>
+`,
   },
   {
     slug: 'building-with-rag-and-llms',
