@@ -741,32 +741,34 @@ CONTEXT DATA:
     title: 'Build an AI Merge Conflict Resolver with LangChain, GPT-4.1 & GitHub API',
     subtitle: 'Streaming AI + PR Analysis — Full-Stack Guide',
     date: 'May 14, 2026',
-    readTime: '22 min read',
+    readTime: '24 min read',
     tags: ['LangChain', 'OpenAI', 'GitHub API', 'Node.js', 'Streaming', 'AI'],
     status: 'live',
-    excerpt: 'Build an AI-powered merge conflict resolver — paste a conflict or analyze a GitHub PR. Features LangChain workflows, streaming responses, and a three-panel UI.',
+    excerpt: 'Build an AI-powered merge conflict resolver — paste a PR URL and let AI analyze diffs, detect conflicts, and suggest resolved code with real-time streaming.',
     content: `
 <p>Merge conflicts are one of the most painful parts of collaborative development. You're staring at <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</code> markers, trying to understand what two branches are doing, and manually picking the right code. What if AI could do it for you?</p>
-<p>In this guide, we'll build a full-stack <strong>AI Merge Conflict Resolver</strong> that can analyze conflicts, understand what each branch is trying to do, and generate clean resolved code — with real-time streaming output. It can also analyze GitHub Pull Requests directly via the GitHub API.</p>
+<p>In this guide, we'll build a full-stack <strong>AI Merge Conflict Resolver</strong> that can analyze any GitHub (or GitLab) Pull Request — fetch all changed files, detect conflicts, and generate clean resolved code with real-time streaming. Just paste a PR URL and click a button.</p>
 <p>👉 <strong><a href="https://anuragkr.in/#merge-resolver" target="_blank" rel="noopener noreferrer">Try the live version at anuragkr.in</a></strong></p>
 
 <h2>1. Architecture Overview</h2>
 <div class="blog-architecture">
 <div class="arch-col">
-<h4>Frontend</h4>
-<p>Three-panel UI: Conflict Editor → AI Analysis (streamed) → Resolved Code Output</p>
+<h4>Frontend (anurag-frontend)</h4>
+<p>Single URL input → File dropdown → Three-panel UI: PR Diff → AI Analysis (streamed) → Resolved Code</p>
 </div>
 <div class="arch-col">
-<h4>Backend</h4>
-<p>Express + LangChain Workflow → OpenAI GPT-4.1 (Streaming) + GitHub Octokit for PR Analysis</p>
+<h4>Backend (anurag-backend)</h4>
+<p>Express + LangChain → GPT-4.1 (Streaming SSE) + Octokit for PR file fetching</p>
 </div>
 </div>
-<p>The flow is:</p>
+<p>The complete flow:</p>
 <ol>
-<li>User pastes a conflict <em>or</em> enters a GitHub PR (owner/repo/number)</li>
-<li>Backend runs a <strong>LangChain chain</strong>: Analyze → Resolve → Validate</li>
-<li>AI response is <strong>streamed</strong> back to the frontend in real time</li>
-<li>Resolved code is extracted and displayed in the output panel</li>
+<li>User pastes a <strong>PR / MR URL</strong> (e.g. <code>https://github.com/anu3dev/anurag-dummy/pull/1</code>)</li>
+<li>Frontend parses the URL to extract <code>owner</code>, <code>repo</code>, and <code>pullNumber</code></li>
+<li>Backend fetches PR files via <strong>GitHub API (Octokit)</strong> and runs <strong>LangChain analysis</strong></li>
+<li>All changed files populate a <strong>dropdown</strong> — user picks a file to view its diff</li>
+<li>Click <strong>Resolve File</strong> (one at a time) or <strong>Resolve All</strong> (batch sequential)</li>
+<li>AI response is <strong>streamed</strong> back via SSE — resolved code appears in the output panel</li>
 </ol>
 
 <h2>2. Why LangChain?</h2>
@@ -782,9 +784,9 @@ CONTEXT DATA:
 <p>Each step gets a focused prompt, and the output of one feeds into the next. This produces significantly better results than a single "do everything" prompt.</p>
 
 <h2>3. Backend Setup</h2>
-<p>Initialize the project:</p>
-<pre><code>mkdir merge-resolver-backend
-cd merge-resolver-backend
+<p>The backend lives in the <code>anurag-backend</code> folder. Initialize the project:</p>
+<pre><code>mkdir anurag-backend
+cd anurag-backend
 npm init -y
 npm install express cors dotenv openai
 npm install langchain @langchain/openai
@@ -796,7 +798,7 @@ npm install -D nodemon</code></pre>
 <pre><code>OPENAI_API_KEY=sk-your-openai-key-here
 GITHUB_TOKEN=ghp-your-github-token-here</code></pre>
 <div class="blog-callout">
-⚠️ Never commit <code>.env</code> to git. Add it to <code>.gitignore</code> immediately. The OpenAI key is billed — exposure means someone else runs up your costs.
+⚠️ Never commit <code>.env</code> to git. Add it to <code>.gitignore</code> immediately. The OpenAI key is billed — exposure means someone else runs up your costs. For the GitHub token, use a <strong>repo-specific fine-grained token</strong> with read-only access.
 </div>
 
 <h2>4. LangChain Model Setup</h2>
@@ -812,7 +814,7 @@ export const model = new ChatOpenAI({
 <p>Low temperature (0.2) keeps the output precise and deterministic — you don't want "creative" merge resolutions.</p>
 
 <h2>5. Step 1 — Analyze the Conflict</h2>
-<p>First chain step: understand what's happening.</p>
+<p>First chain step: understand what's happening in the diff.</p>
 <pre><code>// services/analyzeConflict.js
 import { PromptTemplate } from "@langchain/core/prompts";
 import { model } from "./model.js";
@@ -821,14 +823,15 @@ export async function analyzeConflict(conflict) {
   const prompt = PromptTemplate.fromTemplate(\`
 You are a senior software engineer.
 
-Analyze this git merge conflict.
+Analyze this git diff or merge conflict.
 
 Explain:
-1. What branch A (HEAD) is trying to do
-2. What branch B (incoming) is trying to do
+1. What branch A (HEAD / main) is trying to do
+2. What branch B (incoming / feature) is trying to do
 3. Possible risks of merging
+4. Whether there are real conflicts or just clean additions
 
-Conflict:
+Diff:
 {conflict}
 \`);
 
@@ -848,14 +851,14 @@ export async function resolveConflict(conflict, analysis) {
 Based on this analysis:
 {analysis}
 
-Resolve this merge conflict intelligently.
+Resolve this merge conflict or diff intelligently.
 
 Rules:
-- Return ONLY the final resolved code
-- No explanations, no markdown
+- Return the analysis first, then the final resolved code in a \\\`\\\`\\\` block
 - Keep formatting clean
+- Preserve the intent of both branches where possible
 
-Conflict:
+Diff:
 {conflict}
 \`);
 
@@ -892,8 +895,8 @@ Code:
   return response.content;
 }</code></pre>
 
-<h2>8. GitHub PR Analysis</h2>
-<p>To analyze real Pull Requests, use <strong>Octokit</strong> (GitHub's official REST client) to fetch PR file diffs:</p>
+<h2>8. GitHub PR Analysis with Octokit</h2>
+<p>To analyze real Pull Requests, use <strong>Octokit</strong> (GitHub's official REST client) to fetch PR file diffs. The frontend sends parsed URL components; the backend fetches the data:</p>
 <pre><code>// services/githubService.js
 import { Octokit } from "@octokit/rest";
 
@@ -923,9 +926,8 @@ export async function analyzePullRequest(files) {
 
   const prompt = PromptTemplate.fromTemplate(\`
 Analyze this GitHub Pull Request:
-- What changes were made
-- Possible risks
-- Merge conflict areas
+- What changes were made in each file
+- Possible risks or conflicts
 - Code quality concerns
 
 Files:
@@ -936,14 +938,62 @@ Files:
   const response = await model.invoke(result);
   return response.content;
 }</code></pre>
+<div class="blog-callout">
+💡 Use a <strong>fine-grained GitHub personal access token</strong> scoped to just the repo you want to analyze. This limits exposure — if the token leaks, it only has read access to one repository. Go to Settings → Developer settings → Fine-grained tokens → select only the target repo.
+</div>
 
-<h2>9. Streaming Responses</h2>
-<p>For a better UX, stream the AI response to the frontend using <strong>Server-Sent Events (SSE)</strong> instead of waiting for the full response:</p>
-<pre><code>// In server.js
+<h2>9. Frontend — URL Parsing for GitHub &amp; GitLab</h2>
+<p>The frontend accepts a full PR/MR URL and parses it automatically, supporting both platforms:</p>
+<pre><code>// Parse GitHub PR: github.com/{owner}/{repo}/pull/{number}
+const ghMatch = url.match(
+  /github\\.com\\/([\\w.-]+)\\/([\\w.-]+)\\/pull\\/(\\d+)/
+);
+
+// Parse GitLab MR: gitlab.com/{owner}/{repo}/-/merge_requests/{number}
+const glMatch = url.match(
+  /gitlab\\.com\\/([\\w.-]+)\\/([\\w.-]+)\\/-\\/merge_requests\\/(\\d+)/
+);
+
+const match = ghMatch || glMatch;
+if (!match) {
+  // Show error: "Invalid PR/MR URL"
+  return;
+}
+const [, owner, repo, pullNumber] = match;</code></pre>
+<p>This eliminates the need for separate Owner / Repo / PR Number fields — one text box handles everything. The parsed values are sent to the backend:</p>
+<pre><code>const res = await fetch(\`\${API_BASE_URL}/analyze-pr\`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ owner, repo, pullNumber }),
+});</code></pre>
+
+<h2>10. Multi-File PR Handling</h2>
+<p>Real PRs have multiple files. After the backend returns the analysis, the frontend populates a <strong>file dropdown</strong> and offers two resolve modes:</p>
+<table class="blog-table">
+<thead><tr><th>Button</th><th>Visible When</th><th>What It Does</th></tr></thead>
+<tbody>
+<tr><td><strong>Resolve File</strong></td><td>Always</td><td>Resolves the currently selected file's diff</td></tr>
+<tr><td><strong>Resolve All</strong></td><td>PR has 2+ files</td><td>Processes every file sequentially with progress indicator</td></tr>
+</tbody>
+</table>
+<p>The file dropdown lets users switch between files to view each diff before resolving. The "Resolve All" flow loops through every file, auto-selects it in the dropdown, streams the analysis, and appends resolved code with file dividers:</p>
+<pre><code>for (let i = 0; i &lt; prFiles.length; i++) {
+  setStatus(\`Resolving file \${i+1}/\${prFiles.length}: \${file.filename}\`);
+  fileSelector.value = String(i);
+  conflictInput.value = file.patch;
+
+  const result = await resolveOne(file.patch);
+  resolvedOutput.innerHTML +=
+    \`&lt;div class="merge-file-divider"&gt;📄 \${file.filename}&lt;/div&gt;\`
+    + resolvedBlock;
+}</code></pre>
+
+<h2>11. Streaming Responses via SSE</h2>
+<p>For real-time output, the AI response streams to the frontend using <strong>Server-Sent Events</strong> instead of waiting for the full response:</p>
+<pre><code>// Backend: server.js
 app.post("/stream-resolve", async (req, res) =&gt; {
   const { conflict } = req.body;
 
-  // SSE headers
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
@@ -954,14 +1004,13 @@ app.post("/stream-resolve", async (req, res) =&gt; {
     messages: [
       {
         role: "system",
-        content: "You are an expert resolving git merge conflicts."
+        content: "You are an expert at analyzing and resolving git merge conflicts and diffs."
       },
       {
         role: "user",
-        content: \`Resolve this conflict. Return:
-1. Analysis  2. Final resolved code
+        content: \`Analyze this diff/conflict. Explain what each side does, identify risks, then provide the resolved code in a \\\`\\\`\\\` code block.
 
-Conflict:
+Diff:
 \${conflict}\`
       },
     ],
@@ -972,19 +1021,13 @@ Conflict:
     res.write(\`data: \${JSON.stringify({ content })}\\n\\n\`);
   }
 
-  res.write(\`data: \${JSON.stringify({ done: true })}\\n\\n\`);
+  res.write(\`data: \${JSON.stringify({ content: "", done: true })}\\n\\n\`);
   res.end();
 });</code></pre>
-<p>On the frontend, read the stream with a <code>ReadableStream</code> reader:</p>
-<pre><code>const response = await fetch("/stream-resolve", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ conflict }),
-});
-
-const reader = response.body.getReader();
+<p>On the frontend, read the stream with a <code>ReadableStream</code> reader and extract the resolved code from <code>\`\`\`</code> blocks:</p>
+<pre><code>const reader = response.body.getReader();
 const decoder = new TextDecoder();
-let fullText = "";
+let accumulatedText = "";
 
 while (true) {
   const { done, value } = await reader.read();
@@ -997,96 +1040,117 @@ while (true) {
   for (const line of lines) {
     const json = JSON.parse(line.replace("data: ", ""));
     if (json.content) {
-      fullText += json.content;
-      // Update the UI with each chunk
-      outputEl.textContent = fullText;
+      accumulatedText += json.content;
+      analysisPanel.innerHTML = escapeHtml(accumulatedText);
     }
   }
+}
+// Extract resolved code from triple-backtick blocks
+const codeMatch = accumulatedText.match(/\\\`\\\`\\\`[\\s\\S]*?\\n([\\s\\S]*?)\\\`\\\`\\\`/);
+if (codeMatch) {
+  resolvedPanel.innerHTML = codeMatch[1].trim();
 }</code></pre>
-<p>This gives the user real-time feedback as the AI "types" — much better than a loading spinner for 10+ seconds.</p>
 
-<h2>10. The Express Server</h2>
+<h2>12. The Express Server</h2>
 <p>Tie everything together in <code>server.js</code>:</p>
 <pre><code>import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import OpenAI from "openai";
-import { analyzeConflict } from "./services/analyzeConflict.js";
-import { resolveConflict } from "./services/resolveConflict.js";
-import { validateCode } from "./services/validateCode.js";
 import { getPullRequestFiles } from "./services/githubService.js";
 import { analyzePullRequest } from "./services/analyzePullRequest.js";
 
 dotenv.config();
 const app = express();
-app.use(cors());
+app.use(cors({ origin: "https://anuragkr.in" }));
 app.use(express.json());
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// LangChain workflow endpoint
-app.post("/resolve-conflict", async (req, res) =&gt; {
-  const { conflict } = req.body;
-  const analysis = await analyzeConflict(conflict);
-  const resolved = await resolveConflict(conflict, analysis);
-  const validated = await validateCode(resolved);
-  res.json({ analysis, resolvedCode: validated });
-});
-
-// Streaming endpoint (shown above)
-// app.post("/stream-resolve", ...)
-
 // GitHub PR analysis
 app.post("/analyze-pr", async (req, res) =&gt; {
-  const { owner, repo, pullNumber } = req.body;
-  const files = await getPullRequestFiles(owner, repo, pullNumber);
-  const analysis = await analyzePullRequest(files);
-  res.json({ analysis, filesChanged: files.length, files });
+  try {
+    const { owner, repo, pullNumber } = req.body;
+    const files = await getPullRequestFiles(
+      owner, repo, Number(pullNumber)
+    );
+    const analysis = await analyzePullRequest(files);
+    res.json({
+      analysis,
+      filesChanged: files.length,
+      files: files.map(f =&gt; ({
+        filename: f.filename,
+        patch: f.patch || "",
+      })),
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.listen(5000, () =&gt; console.log("Server on port 5000"));</code></pre>
+// Streaming conflict resolution (SSE)
+// app.post("/stream-resolve", ...) — shown above
 
-<h2>11. Frontend — Three-Panel Layout</h2>
-<p>The UI has three panels side-by-side:</p>
+app.listen(5000, () =&gt;
+  console.log("Server on port 5000")
+);</code></pre>
+<div class="blog-callout">
+📌 <strong>API response shape matters.</strong> The frontend expects <code>{ analysis, files: [{ filename, patch }], filesChanged }</code> from <code>/analyze-pr</code>, and streamed <code>data: {"content": "..."}</code> chunks with a final <code>{"done": true}</code> from <code>/stream-resolve</code>. Match these exactly.
+</div>
+
+<h2>13. Three-Panel UI Layout</h2>
 <table class="blog-table">
 <thead><tr><th>Panel</th><th>Purpose</th><th>Interaction</th></tr></thead>
 <tbody>
-<tr><td><strong>Conflict/Diff</strong></td><td>Paste git conflict text or see PR patches</td><td>Editable text area</td></tr>
-<tr><td><strong>AI Analysis</strong></td><td>Streamed AI analysis with risk assessment</td><td>Read-only, auto-scrolls</td></tr>
-<tr><td><strong>Resolved Code</strong></td><td>Clean resolved output with copy button</td><td>Read-only, copyable</td></tr>
+<tr><td><strong>PR Diff</strong></td><td>Shows the diff for the selected file from the PR</td><td>File dropdown to switch between files, or paste manually</td></tr>
+<tr><td><strong>AI Analysis</strong></td><td>Streamed AI analysis with risk assessment</td><td>Read-only, auto-scrolls as tokens arrive</td></tr>
+<tr><td><strong>Resolved Code</strong></td><td>Clean resolved output with copy button</td><td>Read-only, suggested code — not auto-merged</td></tr>
 </tbody>
 </table>
-<p>Above the panels, a controls bar lets users enter a GitHub PR (owner, repo, PR number) for direct analysis.</p>
+<p>Above the panels, a single URL input accepts any GitHub PR or GitLab MR link. The resolved code panel is purely <strong>suggestive</strong> — it shows AI's recommendation but doesn't actually merge anything. Users review and apply changes themselves.</p>
 
-<h2>12. Security &amp; Best Practices</h2>
+<h2>14. Setting Up the Test Repo</h2>
+<p>For testing, I created a dedicated <a href="https://github.com/anu3dev/anurag-dummy" target="_blank" rel="noopener noreferrer">anurag-dummy</a> repo with intentional conflicts:</p>
+<ol>
+<li>Created 5 TypeScript utility files on <code>main</code> (greeting, math, userService, logger, config)</li>
+<li>Created <code>feature/refactor-services</code> branch and modified all 5 files differently</li>
+<li>Back on <code>main</code>, modified 3 of the same files with conflicting logic</li>
+<li>Raised <a href="https://github.com/anu3dev/anurag-dummy/pull/1" target="_blank" rel="noopener noreferrer">PR #1</a> — GitHub shows 3 conflicting files + 2 clean diffs</li>
+</ol>
+<p>This gives the AI both clean diffs to analyze and real conflicts to resolve — a realistic test scenario. The GitHub token is scoped to only this repo using a fine-grained personal access token.</p>
+
+<h2>15. Security &amp; Best Practices</h2>
 <ul class="blog-checklist">
-<li>API keys (OpenAI + GitHub) stored in <code>.env</code> on the server only</li>
-<li>Frontend calls your backend proxy — never the APIs directly</li>
-<li><code>.env</code> added to <code>.gitignore</code></li>
-<li>CORS configured to allow only your frontend domain</li>
-<li>GitHub token scoped to minimum permissions (read-only repos)</li>
+<li>API keys (OpenAI + GitHub) stored in <code>.env</code> on the server only — never exposed to the frontend</li>
+<li>Frontend calls your backend proxy at <code>nodeapi.anuragkr.in</code> — never the APIs directly</li>
+<li><code>.env</code> added to <code>.gitignore</code> in both frontend and backend repos</li>
+<li>CORS configured to allow only <code>https://anuragkr.in</code></li>
+<li>GitHub token: use <strong>fine-grained PAT</strong> scoped to specific repos with read-only access</li>
+<li>Resolved code is <strong>display-only</strong> — no auto-merge, no write access to any repo</li>
 <li>Error handling on all endpoints with user-friendly messages</li>
 </ul>
 
-<h2>13. Running the Project</h2>
-<pre><code># Backend
-cd merge-resolver-backend
-npm run dev     # nodemon server.js
+<h2>16. Running the Project</h2>
+<pre><code># Backend (anurag-backend)
+cd anurag-backend
+npm run dev        # nodemon server.js
 
-# Frontend
-cd merge-resolver-frontend
-npm run dev     # vite dev server</code></pre>
+# Frontend (anurag-frontend)
+cd anurag-frontend
+npm run dev        # vite dev server</code></pre>
 
 <h2>What You've Built</h2>
 <ul class="blog-checklist">
+<li>A single URL input that parses GitHub PRs and GitLab MRs automatically</li>
+<li>Multi-file PR support with a file dropdown and per-file resolution</li>
+<li>"Resolve File" for one-at-a-time review + "Resolve All" for batch processing</li>
 <li>A three-step LangChain workflow: Analyze → Resolve → Validate</li>
 <li>Streaming AI responses via Server-Sent Events for real-time output</li>
-<li>GitHub PR analysis using Octokit to fetch and analyze file diffs</li>
-<li>A three-panel UI with conflict editor, analysis viewer, and resolved output</li>
-<li>Production-safe architecture with backend API proxy and .env secrets</li>
-<li>A tool that actually saves time in real development workflows</li>
+<li>GitHub PR file fetching using Octokit with a repo-scoped token</li>
+<li>A three-panel UI: PR Diff (with file switcher) → AI Analysis → Suggested Resolved Code</li>
+<li>Production-safe architecture with backend proxy, .env secrets, and display-only output</li>
 </ul>
 `,
   },
