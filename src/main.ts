@@ -8,6 +8,7 @@ import { renderComingSoon } from './pages/ComingSoon'
 import { renderBlog } from './pages/Blog'
 import { renderBlogPost } from './pages/BlogPost'
 import { renderAIChatbot, bindAIChatbot } from './pages/AIChatbot'
+import { renderMergeResolver, bindMergeResolver } from './pages/MergeResolver'
 import { getPage, onRouteChange, navigate } from './router'
 
 const app = document.querySelector<HTMLDivElement>('#app')!
@@ -21,6 +22,7 @@ function renderPage(page: ReturnType<typeof getPage>['page'], param?: string) {
     contact: () => renderContact(),
     'coming-soon': () => renderComingSoon(),
     'ai-chatbot': () => renderAIChatbot(),
+    'merge-resolver': () => renderMergeResolver(),
   }
   const pageRenderer = pageMap[page] ?? pageMap['home']
   const activePage = page === 'blog-post' ? 'blog' : page
@@ -34,6 +36,7 @@ function renderPage(page: ReturnType<typeof getPage>['page'], param?: string) {
   bindHeader()
   if (page === 'contact') bindContact()
   if (page === 'ai-chatbot') bindAIChatbot()
+  if (page === 'merge-resolver') bindMergeResolver()
 
   // bind data-nav links to router
   document.querySelectorAll<HTMLAnchorElement>('[data-nav]').forEach(link => {

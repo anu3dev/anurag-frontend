@@ -128,8 +128,8 @@ export const aiProjects = [
 ]
 
 export const upcomingProjects = [
-  { name: 'Prompt-Based AI Chatbot', desc: 'AI-powered personal assistant with customizable system prompts, adjustable LLM parameters, and resume-aware conversational Q&A.', live: true },
-  { name: 'Frontend Perf Bench', desc: 'Bundle diagnostics, rendering profiler, and a11y audit utility toolkit.' },
+  { name: 'Prompt-Based AI Chatbot', desc: 'AI-powered personal assistant with customizable system prompts, adjustable LLM parameters, and resume-aware conversational Q&A.', live: true, route: 'ai-chatbot' },
+  { name: 'AI Merge Conflict Resolver', desc: 'Paste a git conflict or analyze a GitHub PR — AI breaks down changes, identifies risks, and generates clean resolved code via streaming.', live: true, route: 'merge-resolver' },
   { name: 'Java + React Lab', desc: 'Full-stack starter demos with Spring Boot APIs and modern React frontends.' },
   { name: 'Prompt Engineering Kit', desc: 'A reusable prompt template library for LLM integration workflows.' },
   { name: 'Micro-Frontend Boilerplate', desc: 'Production-ready mono-repo starter for scalable micro-frontend architectures.' },

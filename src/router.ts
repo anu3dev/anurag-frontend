@@ -1,4 +1,4 @@
-type Page = 'home' | 'about' | 'blog' | 'contact' | 'coming-soon' | 'ai-chatbot' | 'blog-post'
+type Page = 'home' | 'about' | 'blog' | 'contact' | 'coming-soon' | 'ai-chatbot' | 'blog-post' | 'merge-resolver'
 
 type RouteHandler = (page: Page, param?: string) => void
 
@@ -13,7 +13,7 @@ export function getPage(): { page: Page; param?: string } {
     return slug ? { page: 'blog-post', param: slug } : { page: 'blog' }
   }
 
-  const validPages: Page[] = ['home', 'about', 'blog', 'contact', 'coming-soon', 'ai-chatbot']
+  const validPages: Page[] = ['home', 'about', 'blog', 'contact', 'coming-soon', 'ai-chatbot', 'merge-resolver']
   const page = validPages.includes(hash as Page) ? (hash as Page) : 'home'
   return { page }
 }

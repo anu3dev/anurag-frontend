@@ -737,6 +737,360 @@ CONTEXT DATA:
 `,
   },
   {
+    slug: 'build-ai-merge-conflict-resolver',
+    title: 'Build an AI Merge Conflict Resolver with LangChain, GPT-4.1 & GitHub API',
+    subtitle: 'Streaming AI + PR Analysis — Full-Stack Guide',
+    date: 'May 14, 2026',
+    readTime: '22 min read',
+    tags: ['LangChain', 'OpenAI', 'GitHub API', 'Node.js', 'Streaming', 'AI'],
+    status: 'live',
+    excerpt: 'Build an AI-powered merge conflict resolver — paste a conflict or analyze a GitHub PR. Features LangChain workflows, streaming responses, and a three-panel UI.',
+    content: `
+<p>Merge conflicts are one of the most painful parts of collaborative development. You're staring at <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</code> markers, trying to understand what two branches are doing, and manually picking the right code. What if AI could do it for you?</p>
+<p>In this guide, we'll build a full-stack <strong>AI Merge Conflict Resolver</strong> that can analyze conflicts, understand what each branch is trying to do, and generate clean resolved code — with real-time streaming output. It can also analyze GitHub Pull Requests directly via the GitHub API.</p>
+<p>👉 <strong><a href="https://anuragkr.in/#merge-resolver" target="_blank" rel="noopener noreferrer">Try the live version at anuragkr.in</a></strong></p>
+
+<h2>1. Architecture Overview</h2>
+<div class="blog-architecture">
+<div class="arch-col">
+<h4>Frontend</h4>
+<p>Three-panel UI: Conflict Editor → AI Analysis (streamed) → Resolved Code Output</p>
+</div>
+<div class="arch-col">
+<h4>Backend</h4>
+<p>Express + LangChain Workflow → OpenAI GPT-4.1 (Streaming) + GitHub Octokit for PR Analysis</p>
+</div>
+</div>
+<p>The flow is:</p>
+<ol>
+<li>User pastes a conflict <em>or</em> enters a GitHub PR (owner/repo/number)</li>
+<li>Backend runs a <strong>LangChain chain</strong>: Analyze → Resolve → Validate</li>
+<li>AI response is <strong>streamed</strong> back to the frontend in real time</li>
+<li>Resolved code is extracted and displayed in the output panel</li>
+</ol>
+
+<h2>2. Why LangChain?</h2>
+<p>You could send one big prompt to the OpenAI API and ask it to do everything. But that often produces messy, inconsistent results. <strong>LangChain</strong> lets you break the work into a structured <strong>chain of steps</strong>:</p>
+<table class="blog-table">
+<thead><tr><th>Step</th><th>What It Does</th><th>Why It's Separate</th></tr></thead>
+<tbody>
+<tr><td><strong>Analyze</strong></td><td>Understand what each branch is doing, identify risks</td><td>Focused analysis produces better insight</td></tr>
+<tr><td><strong>Resolve</strong></td><td>Generate clean merged code based on the analysis</td><td>Uses the analysis as context for smarter resolution</td></tr>
+<tr><td><strong>Validate</strong></td><td>Lint check, syntax review, final cleanup</td><td>Catches issues the resolver might introduce</td></tr>
+</tbody>
+</table>
+<p>Each step gets a focused prompt, and the output of one feeds into the next. This produces significantly better results than a single "do everything" prompt.</p>
+
+<h2>3. Backend Setup</h2>
+<p>Initialize the project:</p>
+<pre><code>mkdir merge-resolver-backend
+cd merge-resolver-backend
+npm init -y
+npm install express cors dotenv openai
+npm install langchain @langchain/openai
+npm install @octokit/rest
+npm install -D nodemon</code></pre>
+<p>Set <code>"type": "module"</code> in your <code>package.json</code> for ES module imports.</p>
+
+<h3>Store Secrets in .env</h3>
+<pre><code>OPENAI_API_KEY=sk-your-openai-key-here
+GITHUB_TOKEN=ghp-your-github-token-here</code></pre>
+<div class="blog-callout">
+⚠️ Never commit <code>.env</code> to git. Add it to <code>.gitignore</code> immediately. The OpenAI key is billed — exposure means someone else runs up your costs.
+</div>
+
+<h2>4. LangChain Model Setup</h2>
+<p>Create a shared model configuration used across all chain steps:</p>
+<pre><code>// services/model.js
+import { ChatOpenAI } from "@langchain/openai";
+
+export const model = new ChatOpenAI({
+  modelName: "gpt-4.1",
+  temperature: 0.2,
+  openAIApiKey: process.env.OPENAI_API_KEY,
+});</code></pre>
+<p>Low temperature (0.2) keeps the output precise and deterministic — you don't want "creative" merge resolutions.</p>
+
+<h2>5. Step 1 — Analyze the Conflict</h2>
+<p>First chain step: understand what's happening.</p>
+<pre><code>// services/analyzeConflict.js
+import { PromptTemplate } from "@langchain/core/prompts";
+import { model } from "./model.js";
+
+export async function analyzeConflict(conflict) {
+  const prompt = PromptTemplate.fromTemplate(\`
+You are a senior software engineer.
+
+Analyze this git merge conflict.
+
+Explain:
+1. What branch A (HEAD) is trying to do
+2. What branch B (incoming) is trying to do
+3. Possible risks of merging
+
+Conflict:
+{conflict}
+\`);
+
+  const formatted = await prompt.format({ conflict });
+  const response = await model.invoke(formatted);
+  return response.content;
+}</code></pre>
+
+<h2>6. Step 2 — Resolve the Conflict</h2>
+<p>Second step: generate the merged code, using the analysis as context.</p>
+<pre><code>// services/resolveConflict.js
+import { PromptTemplate } from "@langchain/core/prompts";
+import { model } from "./model.js";
+
+export async function resolveConflict(conflict, analysis) {
+  const prompt = PromptTemplate.fromTemplate(\`
+Based on this analysis:
+{analysis}
+
+Resolve this merge conflict intelligently.
+
+Rules:
+- Return ONLY the final resolved code
+- No explanations, no markdown
+- Keep formatting clean
+
+Conflict:
+{conflict}
+\`);
+
+  const formatted = await prompt.format({
+    conflict, analysis
+  });
+  const response = await model.invoke(formatted);
+  return response.content;
+}</code></pre>
+
+<h2>7. Step 3 — Validate the Output</h2>
+<p>Final step: review the resolved code for syntax and logic errors.</p>
+<pre><code>// services/validateCode.js
+import { PromptTemplate } from "@langchain/core/prompts";
+import { model } from "./model.js";
+
+export async function validateCode(code) {
+  const prompt = PromptTemplate.fromTemplate(\`
+You are a senior code reviewer.
+
+Validate this code for:
+- Syntax errors
+- Formatting issues
+- Logical consistency
+
+Return ONLY the cleaned final code.
+
+Code:
+{code}
+\`);
+
+  const formatted = await prompt.format({ code });
+  const response = await model.invoke(formatted);
+  return response.content;
+}</code></pre>
+
+<h2>8. GitHub PR Analysis</h2>
+<p>To analyze real Pull Requests, use <strong>Octokit</strong> (GitHub's official REST client) to fetch PR file diffs:</p>
+<pre><code>// services/githubService.js
+import { Octokit } from "@octokit/rest";
+
+const octokit = new Octokit({
+  auth: process.env.GITHUB_TOKEN,
+});
+
+export async function getPullRequestFiles(
+  owner, repo, pullNumber
+) {
+  const response = await octokit.pulls.listFiles({
+    owner,
+    repo,
+    pull_number: pullNumber,
+  });
+  return response.data;
+}</code></pre>
+<p>Then feed those file diffs to the AI for analysis:</p>
+<pre><code>// services/analyzePullRequest.js
+import { PromptTemplate } from "@langchain/core/prompts";
+import { model } from "./model.js";
+
+export async function analyzePullRequest(files) {
+  const formatted = files.map(f =&gt;
+    \`FILE: \${f.filename}\\nCHANGES:\\n\${f.patch || "No patch"}\`
+  ).join("\\n\\n");
+
+  const prompt = PromptTemplate.fromTemplate(\`
+Analyze this GitHub Pull Request:
+- What changes were made
+- Possible risks
+- Merge conflict areas
+- Code quality concerns
+
+Files:
+{files}
+\`);
+
+  const result = await prompt.format({ files: formatted });
+  const response = await model.invoke(result);
+  return response.content;
+}</code></pre>
+
+<h2>9. Streaming Responses</h2>
+<p>For a better UX, stream the AI response to the frontend using <strong>Server-Sent Events (SSE)</strong> instead of waiting for the full response:</p>
+<pre><code>// In server.js
+app.post("/stream-resolve", async (req, res) =&gt; {
+  const { conflict } = req.body;
+
+  // SSE headers
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+
+  const stream = await openai.chat.completions.create({
+    model: "gpt-4.1",
+    stream: true,
+    messages: [
+      {
+        role: "system",
+        content: "You are an expert resolving git merge conflicts."
+      },
+      {
+        role: "user",
+        content: \`Resolve this conflict. Return:
+1. Analysis  2. Final resolved code
+
+Conflict:
+\${conflict}\`
+      },
+    ],
+  });
+
+  for await (const chunk of stream) {
+    const content = chunk.choices?.[0]?.delta?.content || "";
+    res.write(\`data: \${JSON.stringify({ content })}\\n\\n\`);
+  }
+
+  res.write(\`data: \${JSON.stringify({ done: true })}\\n\\n\`);
+  res.end();
+});</code></pre>
+<p>On the frontend, read the stream with a <code>ReadableStream</code> reader:</p>
+<pre><code>const response = await fetch("/stream-resolve", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ conflict }),
+});
+
+const reader = response.body.getReader();
+const decoder = new TextDecoder();
+let fullText = "";
+
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+
+  const chunk = decoder.decode(value);
+  const lines = chunk.split("\\n")
+    .filter(l =&gt; l.startsWith("data:"));
+
+  for (const line of lines) {
+    const json = JSON.parse(line.replace("data: ", ""));
+    if (json.content) {
+      fullText += json.content;
+      // Update the UI with each chunk
+      outputEl.textContent = fullText;
+    }
+  }
+}</code></pre>
+<p>This gives the user real-time feedback as the AI "types" — much better than a loading spinner for 10+ seconds.</p>
+
+<h2>10. The Express Server</h2>
+<p>Tie everything together in <code>server.js</code>:</p>
+<pre><code>import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import OpenAI from "openai";
+import { analyzeConflict } from "./services/analyzeConflict.js";
+import { resolveConflict } from "./services/resolveConflict.js";
+import { validateCode } from "./services/validateCode.js";
+import { getPullRequestFiles } from "./services/githubService.js";
+import { analyzePullRequest } from "./services/analyzePullRequest.js";
+
+dotenv.config();
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+// LangChain workflow endpoint
+app.post("/resolve-conflict", async (req, res) =&gt; {
+  const { conflict } = req.body;
+  const analysis = await analyzeConflict(conflict);
+  const resolved = await resolveConflict(conflict, analysis);
+  const validated = await validateCode(resolved);
+  res.json({ analysis, resolvedCode: validated });
+});
+
+// Streaming endpoint (shown above)
+// app.post("/stream-resolve", ...)
+
+// GitHub PR analysis
+app.post("/analyze-pr", async (req, res) =&gt; {
+  const { owner, repo, pullNumber } = req.body;
+  const files = await getPullRequestFiles(owner, repo, pullNumber);
+  const analysis = await analyzePullRequest(files);
+  res.json({ analysis, filesChanged: files.length, files });
+});
+
+app.listen(5000, () =&gt; console.log("Server on port 5000"));</code></pre>
+
+<h2>11. Frontend — Three-Panel Layout</h2>
+<p>The UI has three panels side-by-side:</p>
+<table class="blog-table">
+<thead><tr><th>Panel</th><th>Purpose</th><th>Interaction</th></tr></thead>
+<tbody>
+<tr><td><strong>Conflict/Diff</strong></td><td>Paste git conflict text or see PR patches</td><td>Editable text area</td></tr>
+<tr><td><strong>AI Analysis</strong></td><td>Streamed AI analysis with risk assessment</td><td>Read-only, auto-scrolls</td></tr>
+<tr><td><strong>Resolved Code</strong></td><td>Clean resolved output with copy button</td><td>Read-only, copyable</td></tr>
+</tbody>
+</table>
+<p>Above the panels, a controls bar lets users enter a GitHub PR (owner, repo, PR number) for direct analysis.</p>
+
+<h2>12. Security &amp; Best Practices</h2>
+<ul class="blog-checklist">
+<li>API keys (OpenAI + GitHub) stored in <code>.env</code> on the server only</li>
+<li>Frontend calls your backend proxy — never the APIs directly</li>
+<li><code>.env</code> added to <code>.gitignore</code></li>
+<li>CORS configured to allow only your frontend domain</li>
+<li>GitHub token scoped to minimum permissions (read-only repos)</li>
+<li>Error handling on all endpoints with user-friendly messages</li>
+</ul>
+
+<h2>13. Running the Project</h2>
+<pre><code># Backend
+cd merge-resolver-backend
+npm run dev     # nodemon server.js
+
+# Frontend
+cd merge-resolver-frontend
+npm run dev     # vite dev server</code></pre>
+
+<h2>What You've Built</h2>
+<ul class="blog-checklist">
+<li>A three-step LangChain workflow: Analyze → Resolve → Validate</li>
+<li>Streaming AI responses via Server-Sent Events for real-time output</li>
+<li>GitHub PR analysis using Octokit to fetch and analyze file diffs</li>
+<li>A three-panel UI with conflict editor, analysis viewer, and resolved output</li>
+<li>Production-safe architecture with backend API proxy and .env secrets</li>
+<li>A tool that actually saves time in real development workflows</li>
+</ul>
+`,
+  },
+  {
     slug: 'building-with-rag-and-llms',
     title: 'Building with RAG & LLMs',
     subtitle: 'Practical AI Integration Patterns',

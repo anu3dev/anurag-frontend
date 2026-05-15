@@ -121,8 +121,9 @@ export function renderHome(): string {
         <div class="upcoming-grid">
           ${upcomingProjects.map(p => {
             const isLive = (p as any).live
-            const href = isLive ? '#ai-chatbot' : '#coming-soon'
-            const nav = isLive ? 'ai-chatbot' : 'coming-soon'
+            const route = (p as any).route || 'coming-soon'
+            const href = isLive ? `#${route}` : '#coming-soon'
+            const nav = isLive ? route : 'coming-soon'
             const badge = isLive ? 'Live' : 'Coming Soon'
             return `
             <a href="${href}" class="upcoming-card ${isLive ? 'upcoming-live' : ''}" data-nav="${nav}">
