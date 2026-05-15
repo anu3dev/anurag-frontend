@@ -1,28 +1,30 @@
 /**
  * Date and number formatting utilities
+ * Refactored: ISO support, compact numbers
  */
 
-export function formatDate(dateStr: string): string {
+export function formatDate(dateStr: string, locale: string = 'en-US'): string {
   const date = new Date(dateStr)
-  return date.toLocaleDateString('en-US', {
+  return new Intl.DateTimeFormat(locale, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-  })
+  }).format(date)
 }
 
 export function formatNumber(num: number): string {
-  return num.toLocaleString('en-US')
+  return new Intl.NumberFormat('en-US', { notation: 'compact' }).format(num)
 }
 
-export function truncateText(text: string, maxLength: number = 100): string {
+export function truncateText(text: string, maxLength: number = 120): string {
   if (text.length <= maxLength) return text
-  return text.slice(0, maxLength).trimEnd() + '…'
+  return text.substring(0, maxLength).replace(/\s+\S*$/, '') + '...'
 }
 
 export function slugToTitle(slug: string): string {
-  return slug
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
+  return slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+}
+
+export function toISODate(dateStr: string): string {
+  return new Date(dateStr).toISOString().split('T')[0]
 }
