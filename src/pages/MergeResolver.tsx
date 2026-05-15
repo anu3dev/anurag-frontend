@@ -18,7 +18,7 @@ export function renderMergeResolver(): string {
           <div class="merge-controls-row merge-controls-url">
             <div class="control-group control-group-url">
               <label for="pr-url">Pull Request / Merge Request URL</label>
-              <input type="text" id="pr-url" value="" placeholder="e.g. https://github.com/facebook/react/pull/31302" autocomplete="off" />
+              <input type="text" id="pr-url" value="https://github.com/anu3dev/anurag-frontend/pull/1" placeholder="e.g. https://github.com/facebook/react/pull/31302" autocomplete="off" />
             </div>
             <div class="merge-actions">
               <button type="button" class="btn btn-outline btn-sm" id="btn-analyze-pr">Analyze PR</button>
