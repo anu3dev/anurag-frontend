@@ -38,6 +38,7 @@ export function renderMergeResolver(): string {
                 <select id="file-selector" class="merge-file-select" style="display:none">
                   <option value="">Select a file…</option>
                 </select>
+                <button type="button" class="btn btn-outline btn-sm" id="btn-load-sample">Load Sample</button>
                 <button type="button" class="btn btn-outline btn-sm" id="btn-clear-conflict">Clear</button>
               </div>
             </div>
@@ -93,9 +94,107 @@ export function bindMergeResolver() {
   const resolveBtn = document.getElementById('btn-resolve') as HTMLButtonElement
   const resolveAllBtn = document.getElementById('btn-resolve-all') as HTMLButtonElement
   const clearBtn = document.getElementById('btn-clear-conflict') as HTMLButtonElement
+  const loadSampleBtn = document.getElementById('btn-load-sample') as HTMLButtonElement
 
   // Store fetched PR files for switching
   let prFiles: { filename: string; patch: string }[] = []
+
+  const SAMPLE_CONFLICT = `/**
+<<<<<<< feature/refactor-services
+ * Structured logging service with log levels and colors
+ */
+
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+
+const LEVEL_PRIORITY: Record<LogLevel, number> = {
+  debug: 0,
+  info: 1,
+  warn: 2,
+  error: 3,
+=======
+ * Logging service — with file output and history
+ */
+
+export type LogLevel = 'info' | 'warn' | 'error' | 'fatal'
+
+interface LogEntry {
+  level: LogLevel
+  context: string
+  message: string
+  timestamp: string
+>>>>>>> main
+}
+
+export class Logger {
+  private context: string
+<<<<<<< feature/refactor-services
+  private minLevel: LogLevel
+=======
+  private static history: LogEntry[] = []
+  private static MAX_HISTORY = 500
+>>>>>>> main
+
+  constructor(context: string, minLevel: LogLevel = 'info') {
+    this.context = context
+    this.minLevel = minLevel
+  }
+
+  debug(message: string, data?: unknown): void {
+    this.log('debug', message, data)
+  }
+
+  info(message: string, data?: unknown): void {
+    this.log('info', message, data)
+  }
+
+  warn(message: string, data?: unknown): void {
+    this.log('warn', message, data)
+  }
+
+<<<<<<< feature/refactor-services
+  error(message: string, data?: unknown): void {
+    this.log('error', message, data)
+  }
+
+  private log(level: LogLevel, message: string, data?: unknown): void {
+    if (LEVEL_PRIORITY[level] < LEVEL_PRIORITY[this.minLevel]) return
+
+    const entry = {
+      timestamp: new Date().toISOString(),
+      level,
+      context: this.context,
+      message,
+      ...(data !== undefined ? { data } : {}),
+    }
+    console.log(JSON.stringify(entry))
+=======
+  fatal(message: string): void {
+    this.log('fatal', message)
+  }
+
+  private log(level: LogLevel, message: string): void {
+    const entry: LogEntry = {
+      level,
+      context: this.context,
+      message,
+      timestamp: new Date().toISOString(),
+    }
+    Logger.history.push(entry)
+    if (Logger.history.length > Logger.MAX_HISTORY) Logger.history.shift()
+
+    const prefix = \`[\${entry.timestamp}] [\${level.toUpperCase().padEnd(5)}] [\${this.context}]\`
+    console.log(\`\${prefix} \${message}\`)
+  }
+
+  static getHistory(): readonly LogEntry[] {
+    return [...Logger.history]
+  }
+
+  static clearHistory(): void {
+    Logger.history = []
+>>>>>>> main
+  }
+}`
 
   function escapeHtml(str: string): string {
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>')
@@ -118,6 +217,12 @@ export function bindMergeResolver() {
     if (!isNaN(idx) && prFiles[idx]) {
       conflictInput.value = prFiles[idx].patch
     }
+  })
+
+  // Load sample conflict
+  loadSampleBtn.addEventListener('click', () => {
+    conflictInput.value = SAMPLE_CONFLICT
+    setStatus('Sample conflict loaded', 'success')
   })
 
   // Clear conflict
